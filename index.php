@@ -1,8 +1,11 @@
 <?php
 
-// Assuming you have a session-based authentication mechanism
-// Start session
-session_start();
+# Import your dependencies
+require_once('vendor/autoload.php');
+
+# Load env variables
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
 // Database connection (assuming it's in the includes folder)
 require 'includes/db.php';
@@ -10,9 +13,15 @@ require 'includes/db.php';
 // Common functions (assuming it's in the includes folder)
 require 'includes/function.php';
 
+require 'controllers/userController.php';
+
 // Get the route from the URL
 $request_url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : 'home';
 $request_method = $_SERVER['REQUEST_METHOD'];
+
+// Assuming you have a session-based authentication mechanism
+// Start session
+session_start();
 
 // Based on the route, decide what content to show
 switch ($request_url) {
@@ -28,8 +37,20 @@ switch ($request_url) {
             break;
         }
         else if ($request_method == 'POST') {
-            print_r($_POST);
-            exit;
+            signUpfunction($_POST);
+            break;
+        }
+    case 'verify/resend':
+        $emailAddress = base64_decode($_GET["emailAdress"]);
+        sendVerificationEmail($emailAddress);
+        break;
+    case 'verify':
+        include 'views/verification.php';
+        break;
+    case 'verification':
+        if($request_method == 'POST'){
+            verificationWithCode($_POST);
+            break;
         }
     
     case 'home':
